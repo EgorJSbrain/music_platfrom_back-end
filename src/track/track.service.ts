@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Model, ObjectId } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 import { Track } from './schemas/track.schema';
-import { Model } from 'mongoose';
 import { Comment } from './schemas/comment.schema';
 import { CreateTrackDto } from './dto/create-track.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Injectable()
 export class TrackService {
@@ -13,19 +15,36 @@ export class TrackService {
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
   ) {}
 
-  async create(dto: CreateTrackDto) {
-    const track = await this.trackModel.create({});
+  async create(dto: CreateTrackDto): Promise<Track> {
+    const track = await this.trackModel.create({ ...dto, listens: 0 });
+
+    return track;
   }
 
-  async getAll() {
-    return '';
+  async getAll(): Promise<Track[]> {
+    const allTracks = await this.trackModel.find();
+
+    return allTracks;
   }
 
-  async getOne() {
-    return '';
+  async getOne(id: ObjectId): Promise<Track> {
+    const track = await this.trackModel.findById(id).populate('comments');
+
+    return track;
   }
 
-  async delete() {
-    return '';
+  async delete(id: ObjectId): Promise<mongoose.Types.ObjectId> {
+    const track = await this.trackModel.findByIdAndDelete(id);
+
+    return track._id;
+  }
+
+  async createComment(dto: CreateCommentDto): Promise<Comment> {
+    const track = await this.trackModel.findById(dto.trackId);
+    const comment = await this.commentModel.create({ ...dto });
+    track.comments.push(comment);
+    await track.save();
+
+    return comment;
   }
 }
