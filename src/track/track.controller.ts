@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -13,10 +14,7 @@ import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { ObjectId } from 'mongoose';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express/multer';
+import { FileFieldsInterceptor } from '@nestjs/platform-express/multer';
 
 @Controller('/tracks')
 export class TrackController {
@@ -26,16 +24,23 @@ export class TrackController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'picture', maxCount: 1 },
-      { name: 'pict', maxCount: 1 },
+      { name: 'audio', maxCount: 1 },
     ]),
   )
   create(@UploadedFiles() files, @Body() dto: CreateTrackDto) {
-    return this.trackSevice.create(dto, '', '');
+    const { picture, audio } = files;
+
+    return this.trackSevice.create(dto, picture[0], audio[0]);
+  }
+
+  @Get('/search/')
+  search(@Query('query') query: string) {
+    return this.trackSevice.search(query);
   }
 
   @Get()
-  getAll() {
-    return this.trackSevice.getAll();
+  getAll(@Query('count') count: number, @Query('offset') offset: number) {
+    return this.trackSevice.getAll(count, offset);
   }
 
   @Get(':id')
@@ -51,5 +56,10 @@ export class TrackController {
   @Post('/comment')
   addComment(@Body() dto: CreateCommentDto) {
     return this.trackSevice.createComment(dto);
+  }
+
+  @Post('/listen/:id')
+  listen(@Param('id') id: ObjectId) {
+    return this.trackSevice.listen(id);
   }
 }

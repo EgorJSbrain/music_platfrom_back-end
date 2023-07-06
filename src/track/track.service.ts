@@ -7,22 +7,32 @@ import { Track } from './schemas/track.schema';
 import { Comment } from './schemas/comment.schema';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { FileService, FileType } from 'src/file/file.service';
 
 @Injectable()
 export class TrackService {
   constructor(
     @InjectModel(Track.name) private trackModel: Model<Track>,
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
+    private fileService: FileService,
   ) {}
 
   async create(dto: CreateTrackDto, picture, audio): Promise<Track> {
-    const track = await this.trackModel.create({ ...dto, listens: 0 });
+    const audioPath = this.fileService.createFile(FileType.AUDIO, audio);
+    const picturePath = this.fileService.createFile(FileType.IMAGE, picture);
+
+    const track = await this.trackModel.create({
+      ...dto,
+      listens: 0,
+      audio: audioPath,
+      picture: picturePath,
+    });
 
     return track;
   }
 
-  async getAll(): Promise<Track[]> {
-    const allTracks = await this.trackModel.find();
+  async getAll(count = 10, offset = 0): Promise<Track[]> {
+    const allTracks = await this.trackModel.find().skip(offset).limit(count);
 
     return allTracks;
   }
@@ -46,5 +56,19 @@ export class TrackService {
     await track.save();
 
     return comment;
+  }
+
+  async listen(id: ObjectId) {
+    const track = await this.trackModel.findById(id);
+    track.listens += 1;
+    track.save();
+  }
+
+  async search(query: string): Promise<Track[]> {
+    const tracks = await this.trackModel.find({
+      name: { $regex: new RegExp(query, 'i') },
+    });
+
+    return tracks;
   }
 }
