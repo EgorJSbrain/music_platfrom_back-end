@@ -7,8 +7,7 @@ export class CreateUserDto {
 
   @IsString({ message: 'Password should be a string' })
   @Length(4, 16, {
-    message:
-      'Password should be more than 4 symbols and not more then 16 symbols',
+    message: 'Password should be more than 4 symbols and not more then 16 symbols',
   })
   readonly password: string;
 }
