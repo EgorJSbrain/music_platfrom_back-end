@@ -5,6 +5,12 @@ export class CreateUserDto {
   @IsEmail({}, { message: 'Form of email is not correct' })
   readonly email: string;
 
+  @IsString({ message: 'First name should be a string' })
+  readonly firstName: string;
+
+  @IsString({ message: 'Last name should be a string' })
+  readonly lastName: string;
+
   @IsString({ message: 'Password should be a string' })
   @Length(4, 16, {
     message: 'Password should be more than 4 symbols and not more then 16 symbols',
