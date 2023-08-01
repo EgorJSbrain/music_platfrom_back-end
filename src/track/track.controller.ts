@@ -33,6 +33,11 @@ export class TrackController {
     return this.trackSevice.getAll(count, offset);
   }
 
+  @Get('/by-user/:userId')
+  getByUserId(@Param('userId') userId: string) {
+    return this.trackSevice.getByUserId(userId);
+  }
+
   @Get(':id')
   getOne(@Param('id') id: ObjectId) {
     return this.trackSevice.getOne(id);

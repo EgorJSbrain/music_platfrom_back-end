@@ -37,6 +37,12 @@ export class TrackService {
     return allTracks;
   }
 
+  async getByUserId(userId: string): Promise<Track[]> {
+    const allTracks = await this.trackModel.find({ userId });
+
+    return allTracks;
+  }
+
   async getOne(id: ObjectId): Promise<Track> {
     const track = await this.trackModel.findById(id).populate('comments');
 
